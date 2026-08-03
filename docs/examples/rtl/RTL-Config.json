@@ -1,0 +1,37 @@
+{
+  "port": "3000",
+  "defaultNodeIndex": 1,
+  "dbDirectoryPath": "/var/lib/rtl",
+  "SSO": {
+    "rtlSSO": 0,
+    "rtlCookiePath": "",
+    "logoutRedirectLink": ""
+  },
+  "nodes": [
+    {
+      "index": 1,
+      "lnNode": "Dashboard Lightning Node",
+      "lnImplementation": "LND",
+      "authentication": {
+        "macaroonPath": "/var/lib/lnd/data/chain/bitcoin/mainnet",
+        "configPath": "/etc/lnd.conf",
+        "swapMacaroonPath": "C:\\Users\\xyz\\AppData\\Local\\Loop\\mainnet",
+        "boltzMacaroonPath": "C:\\Users\\xyz\\AppData\\Boltz\\mainnet"
+      },
+      "settings": {
+        "userPersona": "MERCHANT",
+        "themeMode": "DAY",
+        "themeColor": "PURPLE",
+        "channelBackupPath": "/var/lib/rtl/backups",
+        "logLevel": "INFO",
+        "lnServerUrl": "https://127.0.0.1:8080",
+        "swapServerUrl": "https://127.0.0.1:8081",
+        "boltzServerUrl": "https://127.0.0.1:9003",
+        "fiatConversion": false,
+        "unannouncedChannels": false,
+        "blockExplorerUrl": "https://mempool.space"
+      }
+    }
+  ],
+  "multiPassHashed": "generated-at-install"
+}

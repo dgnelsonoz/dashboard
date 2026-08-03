@@ -1,0 +1,10 @@
+[Unit]
+Description=Shutdown request daemon
+
+[Service]
+Type=simple
+ExecStart=/usr/local/lib/shutdownd/shutdownd.py
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

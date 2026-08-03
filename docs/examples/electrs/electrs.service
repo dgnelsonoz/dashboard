@@ -1,0 +1,15 @@
+[Unit]
+Description=electrs Electrum server
+After=network-online.target bitcoind.service
+Wants=network-online.target
+
+[Service]
+User=electrs
+Group=electrs
+Type=simple
+ExecStart=/usr/local/bin/electrs --conf /etc/electrs/config.toml
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

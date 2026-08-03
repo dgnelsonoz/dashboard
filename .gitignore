@@ -1,0 +1,24 @@
+# Local configuration
+.env
+.env.local
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+
+# Composer dependencies
+/vendor/
+
+# Temporary files
+*.tmp
+*.bak
+
+# Files with passwords
+config/bitcoin-rpc.php
