@@ -75,7 +75,7 @@ if ($isEmbeddedView) {
   <meta charset="utf-8" />
   <title>Bitcoin Node</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="/assets/styles.css?v=44">
+  <link rel="stylesheet" href="/assets/styles.css?v=45">
   <link rel="shortcut icon" href="/favicon.ico?v=5">
   <link rel="icon" href="/favicon.ico?v=5" type="image/x-icon" sizes="16x16">
   <link rel="icon" href="/assets/icons/favicon-16x16.png?v=5" type="image/png" sizes="16x16">
