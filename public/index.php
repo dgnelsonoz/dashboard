@@ -1,15 +1,26 @@
 <?php
+require_once dirname(__DIR__) . '/config/app.php';
+
 $view = $_GET['view'] ?? 'home';
 $views = ['home', 'explorer', 'mempool', 'rtl', 'guides', 'shutdown'];
 if (!in_array($view, $views, true)) {
   $view = 'home';
 }
 
-$embeddedViews = ['explorer', 'mempool', 'rtl'];
+$isDemo = dashboard_is_demo();
+
+if ($isDemo && $view === 'mempool') {
+  header('Location: https://mempool.space/', true, 302);
+  exit;
+}
+
+$embeddedViews = $isDemo ? [] : ['explorer', 'mempool', 'rtl'];
 $isEmbeddedView = in_array($view, $embeddedViews, true);
 $iframeUrl = null;
 
-if ($isEmbeddedView) {
+if ($isDemo && in_array($view, ['explorer', 'rtl'], true)) {
+  $contentView = 'demo-service.php';
+} elseif ($isEmbeddedView) {
   require_once dirname(__DIR__) . '/config/services.php';
 
   $hostHeader = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? 'localhost';
@@ -44,7 +55,8 @@ if ($view === 'guides') {
   $guide = $guides[$guideKey] ?? null;
 }
 
-$mainClass = $view === 'home' ? '' : $view . '-view';
+$isDemoServiceView = $isDemo && in_array($view, ['explorer', 'rtl'], true);
+$mainClass = $view === 'home' ? '' : ($isDemoServiceView ? 'demo-service-view' : $view . '-view');
 $showFooter = !$isEmbeddedView;
 
 if ($isEmbeddedView) {
@@ -63,16 +75,16 @@ if ($isEmbeddedView) {
   <meta charset="utf-8" />
   <title>Bitcoin Node</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="/assets/styles.css?v=41">
+  <link rel="stylesheet" href="/assets/styles.css?v=42">
   <link rel="shortcut icon" href="/favicon.ico?v=5">
   <link rel="icon" href="/favicon.ico?v=5" type="image/x-icon" sizes="16x16">
   <link rel="icon" href="/assets/icons/favicon-16x16.png?v=5" type="image/png" sizes="16x16">
   <link rel="icon" href="/assets/icons/favicon-32x32.png?v=5" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png?v=5" sizes="180x180">
-  <script src="/assets/app.js?v=32" defer></script>
+  <script src="/assets/app.js?v=33" defer></script>
 </head>
 
-<body class="app-body<?php echo ' view-' . htmlspecialchars($view, ENT_QUOTES); ?>">
+<body class="app-body<?php echo ' view-' . htmlspecialchars($view, ENT_QUOTES); ?><?php echo $isDemo ? ' demo-mode' : ''; ?>">
   <?php include dirname(__DIR__) . '/views/header.php'; ?>
 
   <main class="site-main<?php echo $mainClass !== '' ? ' ' . htmlspecialchars($mainClass, ENT_QUOTES) : ''; ?>">

@@ -181,6 +181,11 @@ body.view-rtl{
   background: rgba(255, 255, 255, 0.36);
 }
 
+.shutdown-button:disabled{
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
 .site-nav{
   display: inline-flex;
   gap: 1rem;
@@ -317,6 +322,38 @@ body.view-rtl{
   color: #c87f3b;
   font-size: 1.2rem;
   font-weight: 700;
+}
+
+/* ---- Demo service previews ---- */
+
+.demo-service{
+  width: min(1400px, 100%);
+  margin-inline: auto;
+}
+
+.demo-service-heading{
+  margin-bottom: 1.25rem;
+}
+
+.demo-service-heading h1{
+  margin: 0;
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+}
+
+.demo-label{
+  margin: 0 0 0.25rem;
+  color: #9a5a1d;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.demo-service-image{
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 0.9rem;
+  box-shadow: 0 12px 30px rgba(30, 26, 23, 0.14);
 }
 
 /* ---- Cards ---- */

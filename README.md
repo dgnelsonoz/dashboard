@@ -27,7 +27,30 @@ Complete installation and configuration instructions are available from the **Bi
 
 The workshop provides a step-by-step guide to building a Debian-based Bitcoin node, including installation and configuration of all supported services.
 
+## Demo mode
+
+The same codebase can run as a public, read-only demonstration. Enable it with
+the `DASHBOARD_MODE` environment variable:
+
+```bash
+DASHBOARD_MODE=demo php -S 127.0.0.1:8080 -t public
+```
+
+In demo mode, the home page uses fixed sample data, Lightning and Explorer show
+static previews, Mempool links to `mempool.space`, and shutdown is disabled. All
+system-status and shutdown API endpoints return HTTP 404 without inspecting the
+host system.
+
+Live mode remains the default when `DASHBOARD_MODE` is absent or has any value
+other than `demo`. For Apache, enable the public demo inside its virtual host:
+
+```apache
+SetEnv DASHBOARD_MODE demo
+```
+
+The supplied preview images are stored in `public/assets/demo/` and can be
+replaced later while retaining the existing filenames.
+
 ## License
 
 MIT License
-

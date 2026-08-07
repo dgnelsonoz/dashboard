@@ -30,6 +30,41 @@ function isStatusView() {
   return document.body.classList.contains('view-home');
 }
 
+function isDemoMode() {
+  return document.body.classList.contains('demo-mode');
+}
+
+function loadDemoStatus() {
+  const runningService = { status: 'running' };
+
+  updateNodeStatusCard({
+    service: runningService,
+    rpcAvailable: true,
+    initialBlockDownload: false,
+    nodeType: 'Full Node',
+    blocks: 908742,
+    headers: 908742,
+    syncPercent: 100,
+    connections: 18,
+    connectionsIn: 7,
+    connectionsOut: 11,
+    subversion: '/Satoshi:29.0.0/',
+  });
+  updateElectrsCard({ service: runningService, metricsAvailable: true, tipHeight: 908742, version: '0.10.9' });
+  updateLndCard({ service: runningService, serviceStatus: 'running', version: '0.19.2-beta' });
+  updateRtlCard({ service: runningService, httpAvailable: true, version: '0.15.4' });
+  updateExplorerCard({ service: runningService, httpAvailable: true, version: '3.0.0' });
+  updateMempoolCard({ service: runningService, httpAvailable: true, version: '3.2.1' });
+
+  const mempoolCard = getMempoolCard();
+  if (mempoolCard) {
+    mempoolCard.dataset.cardHref = 'https://mempool.space/';
+    mempoolCard.setAttribute('href', 'https://mempool.space/');
+    mempoolCard.setAttribute('target', '_blank');
+    mempoolCard.setAttribute('rel', 'noopener noreferrer');
+  }
+}
+
 let lastNodeBlocks = null;
 let lastNodeSynced = false;
 let nodeRpcMisses = 0;
@@ -872,6 +907,11 @@ function fetchExplorerStatus() {
 
 document.addEventListener('DOMContentLoaded', () => {
   initShutdownDialog();
+
+  if (isStatusView() && isDemoMode()) {
+    loadDemoStatus();
+    return;
+  }
 
   function pollDashboardStatus() {
     if (!isStatusView() || statusPollInFlight) return;
