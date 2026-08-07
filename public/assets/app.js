@@ -41,16 +41,18 @@ function loadDemoStatus() {
     service: runningService,
     rpcAvailable: true,
     initialBlockDownload: false,
-    nodeType: 'Full Node',
-    blocks: 908742,
-    headers: 908742,
+    nodeType: 'Full',
+    blocks: 961370,
+    headers: 961370,
     syncPercent: 100,
-    connections: 18,
-    connectionsIn: 7,
-    connectionsOut: 11,
-    subversion: '/Satoshi:29.0.0/',
+    connections: 23,
+    connectionsIn: 5,
+    connectionsOut: 18,
+    subversion: '/Satoshi:31.1.0/',
   });
-  updateElectrsCard({ service: runningService, metricsAvailable: true, tipHeight: 908742, version: '0.10.9' });
+  setField('node-version', 'Core31.1');
+  updateElectrsCard({ service: runningService, metricsAvailable: true, tipHeight: 961370, version: '0.10.9' });
+  setField('electrs-connection', 'bitcoin-node.local:5000:t');
   updateLndCard({ service: runningService, serviceStatus: 'running', version: '0.19.2-beta' });
   updateRtlCard({ service: runningService, httpAvailable: true, version: '0.15.4' });
   updateExplorerCard({ service: runningService, httpAvailable: true, version: '3.0.0' });
@@ -58,11 +60,30 @@ function loadDemoStatus() {
 
   const mempoolCard = getMempoolCard();
   if (mempoolCard) {
-    mempoolCard.dataset.cardHref = 'https://mempool.space/';
-    mempoolCard.setAttribute('href', 'https://mempool.space/');
-    mempoolCard.setAttribute('target', '_blank');
-    mempoolCard.setAttribute('rel', 'noopener noreferrer');
+    mempoolCard.dataset.cardHref = '/?view=mempool';
+    mempoolCard.setAttribute('href', '/?view=mempool');
   }
+}
+
+function loadPublicDemoBlockHeight() {
+  fetch('https://mempool.space/api/blocks/tip/height', { cache: 'no-store' })
+    .then((res) => {
+      if (!res.ok) throw new Error('Public block height unavailable');
+      return res.text();
+    })
+    .then((value) => {
+      const height = Number.parseInt(value.trim(), 10);
+      if (!Number.isSafeInteger(height) || height <= 0) return;
+
+      const formattedHeight = formatBlockHeight(height);
+      setField('node-block', formattedHeight);
+      setField('network-block', formattedHeight);
+      setField('electrs-height', formattedHeight);
+      setField('electrs-node-block', formattedHeight);
+    })
+    .catch(() => {
+      // Keep the fixed demo height when the public service is unavailable.
+    });
 }
 
 let lastNodeBlocks = null;
@@ -910,6 +931,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (isStatusView() && isDemoMode()) {
     loadDemoStatus();
+    loadPublicDemoBlockHeight();
     return;
   }
 

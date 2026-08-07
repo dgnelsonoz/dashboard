@@ -11,7 +11,7 @@
         <a href="/" class="nav-link<?php echo ($view === 'home') ? ' nav-link-active' : ''; ?>">Home</a>
         <a href="/?view=rtl" class="nav-link<?php echo ($view === 'rtl') ? ' nav-link-active' : ''; ?>">Lightning</a>
         <a href="/?view=explorer" class="nav-link<?php echo ($view === 'explorer') ? ' nav-link-active' : ''; ?>">Explorer</a>
-        <a href="<?php echo $isDemo ? 'https://mempool.space/' : '/?view=mempool'; ?>"<?php echo $isDemo ? ' target="_blank" rel="noopener noreferrer"' : ''; ?> class="nav-link<?php echo ($view === 'mempool') ? ' nav-link-active' : ''; ?>">Mempool</a>
+        <a href="/?view=mempool" class="nav-link<?php echo ($view === 'mempool') ? ' nav-link-active' : ''; ?>">Mempool</a>
         <a href="/?view=guides" class="nav-link<?php echo ($view === 'guides') ? ' nav-link-active' : ''; ?>">Guides</a>
       </nav>
       <button class="shutdown-button" type="button" aria-label="<?php echo $isDemo ? 'Shutdown unavailable in demo mode' : 'Shutdown'; ?>"<?php echo $isDemo ? ' disabled title="Unavailable in demo mode"' : ''; ?>>

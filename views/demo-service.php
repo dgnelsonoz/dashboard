@@ -1,15 +1,16 @@
 <?php
-$demoService = $view === 'rtl' ? 'lightning' : 'explorer';
-$demoTitle = $view === 'rtl' ? 'Ride The Lightning' : 'BTC RPC Explorer';
+$demoServices = [
+  'rtl' => ['image' => 'lightning.png', 'title' => 'Ride The Lightning'],
+  'explorer' => ['image' => 'explorer.png', 'title' => 'BTC RPC Explorer'],
+  'mempool' => ['image' => 'mempool.png', 'title' => 'Mempool'],
+];
+$demoService = $demoServices[$view];
 ?>
-<section class="demo-service" aria-labelledby="demo-service-title">
-  <div class="demo-service-heading">
-    <p class="demo-label">Interactive demo preview</p>
-    <h1 id="demo-service-title"><?php echo htmlspecialchars($demoTitle, ENT_QUOTES); ?></h1>
-  </div>
+<section class="demo-service">
+  <div class="demo-service-banner">Demo Only &mdash; Not to Scale</div>
   <img
     class="demo-service-image"
-    src="/assets/demo/<?php echo htmlspecialchars($demoService, ENT_QUOTES); ?>.svg"
-    alt="Static preview of <?php echo htmlspecialchars($demoTitle, ENT_QUOTES); ?>"
+    src="/assets/demo/<?php echo htmlspecialchars($demoService['image'], ENT_QUOTES); ?>"
+    alt="Static preview of <?php echo htmlspecialchars($demoService['title'], ENT_QUOTES); ?>"
   >
 </section>

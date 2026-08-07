@@ -9,16 +9,11 @@ if (!in_array($view, $views, true)) {
 
 $isDemo = dashboard_is_demo();
 
-if ($isDemo && $view === 'mempool') {
-  header('Location: https://mempool.space/', true, 302);
-  exit;
-}
-
 $embeddedViews = $isDemo ? [] : ['explorer', 'mempool', 'rtl'];
 $isEmbeddedView = in_array($view, $embeddedViews, true);
 $iframeUrl = null;
 
-if ($isDemo && in_array($view, ['explorer', 'rtl'], true)) {
+if ($isDemo && in_array($view, ['explorer', 'mempool', 'rtl'], true)) {
   $contentView = 'demo-service.php';
 } elseif ($isEmbeddedView) {
   require_once dirname(__DIR__) . '/config/services.php';
@@ -55,11 +50,13 @@ if ($view === 'guides') {
   $guide = $guides[$guideKey] ?? null;
 }
 
-$isDemoServiceView = $isDemo && in_array($view, ['explorer', 'rtl'], true);
+$isDemoServiceView = $isDemo && in_array($view, ['explorer', 'mempool', 'rtl'], true);
 $mainClass = $view === 'home' ? '' : ($isDemoServiceView ? 'demo-service-view' : $view . '-view');
-$showFooter = !$isEmbeddedView;
+$showFooter = !$isEmbeddedView && !$isDemoServiceView;
 
-if ($isEmbeddedView) {
+if ($isDemoServiceView) {
+  $contentView = 'demo-service.php';
+} elseif ($isEmbeddedView) {
   $contentView = 'embedded-service.php';
 } elseif ($view === 'shutdown') {
   $contentView = 'shutdown.php';
@@ -75,13 +72,13 @@ if ($isEmbeddedView) {
   <meta charset="utf-8" />
   <title>Bitcoin Node</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="/assets/styles.css?v=46">
+  <link rel="stylesheet" href="/assets/styles.css?v=54">
   <link rel="shortcut icon" href="/favicon.ico?v=5">
   <link rel="icon" href="/favicon.ico?v=5" type="image/x-icon" sizes="16x16">
   <link rel="icon" href="/assets/icons/favicon-16x16.png?v=5" type="image/png" sizes="16x16">
   <link rel="icon" href="/assets/icons/favicon-32x32.png?v=5" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png?v=5" sizes="180x180">
-  <script src="/assets/app.js?v=33" defer></script>
+  <script src="/assets/app.js?v=37" defer></script>
 </head>
 
 <body class="app-body<?php echo ' view-' . htmlspecialchars($view, ENT_QUOTES); ?><?php echo $isDemo ? ' demo-mode' : ''; ?>">

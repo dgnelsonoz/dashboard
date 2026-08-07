@@ -36,10 +36,10 @@ the `DASHBOARD_MODE` environment variable:
 DASHBOARD_MODE=demo php -S 127.0.0.1:8080 -t public
 ```
 
-In demo mode, the home page uses fixed sample data, Lightning and Explorer show
-static previews, Mempool links to `mempool.space`, and shutdown is disabled. All
-system-status and shutdown API endpoints return HTTP 404 without inspecting the
-host system.
+In demo mode, the home page uses sample data with a public block-height lookup,
+Lightning, Explorer, and Mempool show static previews, and shutdown is disabled.
+All system-status and shutdown API endpoints return HTTP 404 without inspecting
+the host system.
 
 Live mode remains the default when `DASHBOARD_MODE` is absent or has any value
 other than `demo`. For Apache, enable the public demo inside its virtual host:
@@ -48,7 +48,7 @@ other than `demo`. For Apache, enable the public demo inside its virtual host:
 SetEnv DASHBOARD_MODE demo
 ```
 
-The supplied preview images are stored in `public/assets/demo/` and can be
+The supplied PNG preview images are stored in `public/assets/demo/` and can be
 replaced later while retaining the existing filenames.
 
 ## License
