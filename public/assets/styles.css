@@ -131,12 +131,13 @@ body.view-rtl{
 }
 
 .site-logo-demo{
+  margin-left: 0.4rem;
   border: 1px solid rgba(0, 0, 0, 0.72);
   border-radius: 999px;
   background: #1a1a1a;
   color: #fbb16a;
   font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-  font-size: 0.67rem;
+  font-size: 0.82rem;
   font-weight: 700;
   letter-spacing: 0.12em;
   line-height: 1;
