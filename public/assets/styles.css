@@ -444,9 +444,9 @@ body.view-rtl{
 }
 
 .demo-mode .status-card h2::after{
-  content: "Demo mode";
+  content: "Demo";
   margin-left: 0.3rem;
-  border: 1px solid rgba(26, 26, 26, 0.72);
+  border: 0.5px solid rgba(26, 26, 26, 0.72);
   border-radius: 999px;
   color: #333333;
   font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
@@ -454,7 +454,7 @@ body.view-rtl{
   font-weight: 700;
   letter-spacing: 0.09em;
   line-height: 1;
-  padding: 0.3rem 0.45rem 0.26rem;
+  padding: 0.28rem 0.42rem 0.24rem;
   text-transform: uppercase;
   white-space: nowrap;
 }
