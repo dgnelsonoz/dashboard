@@ -130,6 +130,22 @@ body.view-rtl{
   gap: 0.5rem;
 }
 
+.site-logo-demo{
+  border: 1px solid rgba(0, 0, 0, 0.72);
+  border-radius: 999px;
+  background: #1a1a1a;
+  color: #fbb16a;
+  font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.67rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  padding: 0.42rem 0.62rem 0.38rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.16);
+}
+
 .site-header-controls{
   display: inline-flex;
   align-items: center;
