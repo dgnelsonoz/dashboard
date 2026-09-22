@@ -54,7 +54,7 @@
   </article>
 
   <!-- Electrum Server (Electrs) console card -->
-  <article class="card status-card electrum-console-card">
+  <article class="card status-card electrum-console-card" data-full-node-only hidden>
     <h2><span class="status-led" aria-hidden="true"></span>Electrum Server</h2>
 
     <div class="kv-rows" role="list">
@@ -91,7 +91,7 @@
   </article>
 
   <!-- Lightning (LND) console card -->
-  <article class="card status-card lnd-console-card">
+  <article class="card status-card lnd-console-card" data-full-node-only hidden>
     <h2><span class="status-led" aria-hidden="true"></span>Lightning Node</h2>
 
     <div class="kv-rows" role="list">
@@ -110,6 +110,8 @@
   <!-- Ride The Lightning (RTL) console card -->
   <a
     class="card status-card rtl-console-card"
+    data-full-node-only
+    hidden
     data-card-href="/?view=rtl"
     aria-label="Open Ride The Lightning"
     aria-disabled="true"
@@ -154,6 +156,8 @@
   <!-- Mempool console card -->
   <a
     class="card status-card mempool-console-card"
+    data-full-node-only
+    hidden
     data-card-href="/?view=mempool"
     aria-label="Open Mempool"
     aria-disabled="true"

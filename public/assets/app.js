@@ -41,16 +41,15 @@ function loadDemoStatus() {
     service: runningService,
     rpcAvailable: true,
     initialBlockDownload: false,
-    nodeType: 'Full',
+    nodeType: 'Pruned',
     blocks: 961370,
     headers: 961370,
     syncPercent: 100,
     connections: 23,
     connectionsIn: 5,
     connectionsOut: 18,
-    subversion: '/Satoshi:31.1.0/',
+    subversion: '/Satoshi:31.1.1.0/',
   });
-  setField('node-version', 'Core31.1');
   updateElectrsCard({ service: runningService, metricsAvailable: true, tipHeight: 961370, version: '0.10.9' });
   setField('electrs-connection', 'bitcoin-node.local:5000:t');
   updateLndCard({ service: runningService, serviceStatus: 'running', version: '0.19.2-beta' });
@@ -88,6 +87,7 @@ function loadPublicDemoBlockHeight() {
 
 let lastNodeBlocks = null;
 let lastNodeSynced = false;
+let lastNodeType = null;
 let nodeRpcMisses = 0;
 let lastElectrsData = null;
 let electrsStatus = null;
@@ -118,11 +118,15 @@ function parseCoreKnotsLabel(subversion) {
   const isKnots = /knots/i.test(subversion);
   const impl = isKnots ? 'Knots' : 'Core';
 
-  // Grab major.minor
-  const m = subversion.match(/:(\d+\.\d+)/) || subversion.match(/(\d+\.\d+)/);
+  const m = subversion.match(/:(\d+(?:\.\d+)+)/) || subversion.match(/(\d+(?:\.\d+)+)/);
   if (!m) return '--';
 
-  return `${impl} ${m[1]}`;
+  const versionParts = m[1].split('.');
+  while (versionParts.length > 2 && versionParts.at(-1) === '0') {
+    versionParts.pop();
+  }
+
+  return `${impl} ${versionParts.join('.')}`;
 }
 
 function computeNodePercentInt(data) {
@@ -165,6 +169,12 @@ function getElectrsConnectionLabel() {
 function setField(field, value) {
   document.querySelectorAll(`[data-field="${field}"]`).forEach((el) => {
     el.textContent = value;
+  });
+}
+
+function setFullNodeFeaturesVisible(visible) {
+  document.querySelectorAll('[data-full-node-only]').forEach((el) => {
+    el.hidden = !visible;
   });
 }
 
@@ -254,9 +264,11 @@ function markNodeUnavailable(label = 'Stopped', cardStatus = 'bad', version = ''
   setField('node-connections', '');
   setField('node-connections-in', '');
   setField('node-connections-out', '');
-  setField('node-version', version || '');
+  setField('node-version', version ? parseCoreKnotsLabel(version) : '');
   lastNodeBlocks = null;
   lastNodeSynced = false;
+  lastNodeType = null;
+  setFullNodeFeaturesVisible(false);
 
   setCardStatus(getNodeCard(), cardStatus);
 
@@ -378,6 +390,8 @@ function updateNodeStatusCard(data) {
   }
 
   nodeRpcMisses = 0;
+  lastNodeType = data.nodeType ?? null;
+  setFullNodeFeaturesVisible(lastNodeType === 'Full');
   setField('node-status', data.initialBlockDownload ? 'Synchronising' : 'Running');
   setField('node-type', data.nodeType ?? '--');
 
@@ -429,6 +443,22 @@ function fetchNodeStatus() {
     .catch(err => {
       console.error('Node info fetch failed:', err);
       markNodeUnavailable('Stopped', 'bad');
+    });
+}
+
+function fetchNodeFeatureVisibility() {
+  if (isStatusView() || isDemoMode()) return Promise.resolve();
+
+  return fetch('/api/bitcoin-node-status.php', { cache: 'no-store' })
+    .then(res => res.json())
+    .then(json => {
+      const nodeType = json?.ok && json?.data?.rpcAvailable
+        ? json.data.nodeType
+        : null;
+      setFullNodeFeaturesVisible(nodeType === 'Full');
+    })
+    .catch(() => {
+      setFullNodeFeaturesVisible(false);
     });
 }
 
@@ -928,6 +958,7 @@ function fetchExplorerStatus() {
 
 document.addEventListener('DOMContentLoaded', () => {
   initShutdownDialog();
+  fetchNodeFeatureVisibility();
 
   if (isStatusView() && isDemoMode()) {
     loadDemoStatus();
@@ -939,14 +970,20 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!isStatusView() || statusPollInFlight) return;
 
     statusPollInFlight = true;
-    Promise.allSettled([
-      fetchNodeStatus(),
-      fetchElectrsStatus(),
-      fetchLndStatus(),
-      fetchMempoolStatus(),
-      fetchRtlStatus(),
-      fetchExplorerStatus(),
-    ]).finally(() => {
+    fetchNodeStatus().then(() => {
+      const serviceRequests = [fetchExplorerStatus()];
+
+      if (lastNodeType === 'Full') {
+        serviceRequests.push(
+          fetchElectrsStatus(),
+          fetchLndStatus(),
+          fetchMempoolStatus(),
+          fetchRtlStatus(),
+        );
+      }
+
+      return Promise.allSettled(serviceRequests);
+    }).finally(() => {
       statusPollInFlight = false;
     });
   }

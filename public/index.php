@@ -78,7 +78,7 @@ if ($isDemoServiceView) {
   <link rel="icon" href="/assets/icons/favicon-16x16.png?v=5" type="image/png" sizes="16x16">
   <link rel="icon" href="/assets/icons/favicon-32x32.png?v=5" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png?v=5" sizes="180x180">
-  <script src="/assets/app.js?v=37" defer></script>
+  <script src="/assets/app.js?v=40" defer></script>
 </head>
 
 <body class="app-body<?php echo ' view-' . htmlspecialchars($view, ENT_QUOTES); ?><?php echo $isDemo ? ' demo-mode' : ''; ?>">
