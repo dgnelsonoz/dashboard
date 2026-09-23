@@ -454,7 +454,7 @@ function fetchNodeStatus() {
 }
 
 function fetchNodeFeatureVisibility() {
-  if (isStatusView() || isDemoMode()) return Promise.resolve();
+  if (isStatusView() || isDemoMode()) return Promise.resolve(true);
 
   return fetch('/api/bitcoin-node-status.php', { cache: 'no-store' })
     .then(res => res.json())
@@ -463,10 +463,20 @@ function fetchNodeFeatureVisibility() {
         ? json.data.nodeType
         : null;
       setFullNodeFeaturesVisible(nodeType === 'Full');
+      return nodeType === 'Full' || nodeType === 'Pruned';
     })
     .catch(() => {
       setFullNodeFeaturesVisible(false);
+      return false;
     });
+}
+
+function resolveNodeFeatureVisibility() {
+  fetchNodeFeatureVisibility().then(resolved => {
+    if (!resolved) {
+      setTimeout(resolveNodeFeatureVisibility, 15000);
+    }
+  });
 }
 
 /* -----------------------------
@@ -965,7 +975,7 @@ function fetchExplorerStatus() {
 
 document.addEventListener('DOMContentLoaded', () => {
   initShutdownDialog();
-  fetchNodeFeatureVisibility();
+  resolveNodeFeatureVisibility();
 
   if (isStatusView() && isDemoMode()) {
     loadDemoStatus();
