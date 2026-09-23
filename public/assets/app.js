@@ -101,7 +101,8 @@ let lastRtlVersion = null;
 let lastExplorerVersion = null;
 let statusPollInFlight = false;
 
-const NODE_RPC_MISS_THRESHOLD = 0;
+// Preserve the last good node values through two transient poll failures.
+const NODE_RPC_MISS_THRESHOLD = 3;
 const ELECTRS_METRICS_MISS_THRESHOLD = 0;
 const LND_VERSION_MISS_THRESHOLD = 0;
 
@@ -176,6 +177,11 @@ function setFullNodeFeaturesVisible(visible) {
   document.querySelectorAll('[data-full-node-only]').forEach((el) => {
     el.hidden = !visible;
   });
+}
+
+function shouldRetainLastNodeStatus() {
+  nodeRpcMisses += 1;
+  return nodeRpcMisses < NODE_RPC_MISS_THRESHOLD && lastNodeBlocks !== null;
 }
 
 function formatBlockHeight(value) {
@@ -375,8 +381,7 @@ function updateNodeStatusCard(data) {
 
   if (data?.rpcAvailable === false) {
     if (serviceStatus === 'running') {
-      nodeRpcMisses += 1;
-      if (nodeRpcMisses < NODE_RPC_MISS_THRESHOLD && lastNodeBlocks !== null) {
+      if (shouldRetainLastNodeStatus()) {
         return;
       }
       // systemd is authoritative for the process state. RPC can be unavailable
@@ -435,6 +440,7 @@ function fetchNodeStatus() {
     .then(json => {
       if (!json.ok) {
         console.warn('Node info error:', json.error);
+        if (shouldRetainLastNodeStatus()) return;
         markNodeUnavailable('Stopped', 'bad');
         return;
       }
@@ -442,6 +448,7 @@ function fetchNodeStatus() {
     })
     .catch(err => {
       console.error('Node info fetch failed:', err);
+      if (shouldRetainLastNodeStatus()) return;
       markNodeUnavailable('Stopped', 'bad');
     });
 }
