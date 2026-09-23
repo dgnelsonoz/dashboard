@@ -4,9 +4,6 @@ We can remotely log into the node server from another computer on the local netw
 
 Open the Terminal program on Linux or MacOS, or PowerShell on Windows. Use you own username and hostname if they are different. You might have to use the node's IP address if the hostname doesn't respond.
 
-```bash
-ssh nelson@bitcoin-node.local
-```
 ```
 ssh youruser@<node-hostname-or-ip>
 ```
