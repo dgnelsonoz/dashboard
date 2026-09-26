@@ -41,7 +41,7 @@ function loadDemoStatus() {
     service: runningService,
     rpcAvailable: true,
     initialBlockDownload: false,
-    nodeType: 'Pruned',
+    nodeType: 'Full',
     blocks: 961370,
     headers: 961370,
     syncPercent: 100,
@@ -88,7 +88,10 @@ function loadPublicDemoBlockHeight() {
 let lastNodeBlocks = null;
 let lastNodeSynced = false;
 let lastNodeType = null;
-let nodeRpcMisses = 0;
+let lastNodeVersion = null;
+let lastNodeConnections = null;
+let lastNodeConnectionsIn = null;
+let lastNodeConnectionsOut = null;
 let lastElectrsData = null;
 let electrsStatus = null;
 let lastElectrsHeight = null;
@@ -101,10 +104,15 @@ let lastRtlVersion = null;
 let lastExplorerVersion = null;
 let statusPollInFlight = false;
 
-// Preserve the last good node values through two transient poll failures.
-const NODE_RPC_MISS_THRESHOLD = 3;
 const ELECTRS_METRICS_MISS_THRESHOLD = 0;
 const LND_VERSION_MISS_THRESHOLD = 0;
+const NODE_VERSION_STORAGE_KEY = 'dashboard.bitcoinNodeVersion';
+
+try {
+  lastNodeVersion = window.localStorage.getItem(NODE_VERSION_STORAGE_KEY);
+} catch (err) {
+  console.warn('Unable to read cached node version:', err);
+}
 
 /* -----------------------------
    Helpers
@@ -179,9 +187,12 @@ function setFullNodeFeaturesVisible(visible) {
   });
 }
 
-function shouldRetainLastNodeStatus() {
-  nodeRpcMisses += 1;
-  return nodeRpcMisses < NODE_RPC_MISS_THRESHOLD && lastNodeBlocks !== null;
+function markNodeUpdating() {
+  const card = getNodeCard();
+  card?.classList.add('node-stale');
+  setField('node-status', 'Updating');
+  if (lastNodeVersion) setField('node-version', lastNodeVersion);
+  setCardStatus(card, 'neutral');
 }
 
 function formatBlockHeight(value) {
@@ -260,6 +271,7 @@ function formatRtlVersion(version) {
 }
 
 function markNodeUnavailable(label = 'Stopped', cardStatus = 'bad', version = '') {
+  getNodeCard()?.classList.remove('node-stale');
   setField('node-status', label);
   setField('node-type', '--');
   setField('node-block', '');
@@ -362,39 +374,26 @@ function updateNodeStatusCard(data) {
   const serviceStatus = data?.service?.status ?? 'unknown';
 
   if (serviceStatus === 'not installed') {
-    nodeRpcMisses = 0;
     markNodeUnavailable('Not Installed', 'neutral');
     return;
   }
 
   if (serviceStatus === 'stopped') {
-    nodeRpcMisses = 0;
     markNodeUnavailable('Stopped', 'bad', data?.binaryVersion ?? '');
     return;
   }
 
   if (serviceStatus === 'starting') {
-    nodeRpcMisses = 0;
     markNodeUnavailable('Starting', 'warn', data?.binaryVersion ?? '');
     return;
   }
 
-  if (data?.rpcAvailable === false) {
-    if (serviceStatus === 'running') {
-      if (shouldRetainLastNodeStatus()) {
-        return;
-      }
-      // systemd is authoritative for the process state. RPC can be unavailable
-      // because dashboard credentials are not configured, not only at startup.
-      markNodeUnavailable('Running', 'warn', data?.binaryVersion ?? '');
-    } else {
-      nodeRpcMisses = 0;
-      markNodeUnavailable('Stopped', 'bad', data?.binaryVersion ?? '');
-    }
+  if (data?.rpcAvailable !== true) {
+    markNodeUpdating();
     return;
   }
 
-  nodeRpcMisses = 0;
+  getNodeCard()?.classList.remove('node-stale');
   lastNodeType = data.nodeType ?? null;
   setFullNodeFeaturesVisible(lastNodeType === 'Full');
   setField('node-status', data.initialBlockDownload ? 'Synchronising' : 'Running');
@@ -408,14 +407,27 @@ function updateNodeStatusCard(data) {
 
   const pctInt = computeNodePercentInt(data);
   setField('node-sync-percent', (pctInt === null ? '--' : String(pctInt)));
-  setField('node-sync-percent-sign', '%');
+  setField('node-sync-percent-sign', pctInt === null ? '' : '%');
 
-  setField('node-connections', (typeof data.connections === 'number') ? String(data.connections) : '--');
-  setField('node-connections-in', (typeof data.connectionsIn === 'number') ? String(data.connectionsIn) : '--');
-  setField('node-connections-out', (typeof data.connectionsOut === 'number') ? String(data.connectionsOut) : '--');
+  if (typeof data.connections === 'number') lastNodeConnections = data.connections;
+  if (typeof data.connectionsIn === 'number') lastNodeConnectionsIn = data.connectionsIn;
+  if (typeof data.connectionsOut === 'number') lastNodeConnectionsOut = data.connectionsOut;
 
-  // Version (Core/Knots X.Y from subversion)
-  setField('node-version', parseCoreKnotsLabel(data.subversion));
+  setField('node-connections', lastNodeConnections === null ? '--' : String(lastNodeConnections));
+  setField('node-connections-in', lastNodeConnectionsIn === null ? '--' : String(lastNodeConnectionsIn));
+  setField('node-connections-out', lastNodeConnectionsOut === null ? '--' : String(lastNodeConnectionsOut));
+
+  // Keep the last RPC-reported version through partial RPC failures and reloads.
+  const nodeVersion = parseCoreKnotsLabel(data.subversion);
+  if (nodeVersion !== '--') {
+    lastNodeVersion = nodeVersion;
+    try {
+      window.localStorage.setItem(NODE_VERSION_STORAGE_KEY, nodeVersion);
+    } catch (err) {
+      console.warn('Unable to cache node version:', err);
+    }
+  }
+  setField('node-version', lastNodeVersion ?? '--');
 
   const nodeCard = getNodeCard();
 
@@ -436,25 +448,31 @@ function fetchNodeStatus() {
   if (!isStatusView()) return Promise.resolve();
 
   return fetch('/api/bitcoin-node-status.php', { cache: 'no-store' })
-    .then(res => res.json())
+    .then(res => {
+      if (!res.ok) throw new Error(`Node status HTTP ${res.status}`);
+      return res.json();
+    })
     .then(json => {
       if (!json.ok) {
         console.warn('Node info error:', json.error);
-        if (shouldRetainLastNodeStatus()) return;
-        markNodeUnavailable('Stopped', 'bad');
+        markNodeUpdating();
         return;
       }
       updateNodeStatusCard(json.data);
     })
     .catch(err => {
       console.error('Node info fetch failed:', err);
-      if (shouldRetainLastNodeStatus()) return;
-      markNodeUnavailable('Stopped', 'bad');
+      markNodeUpdating();
     });
 }
 
 function fetchNodeFeatureVisibility() {
-  if (isStatusView() || isDemoMode()) return Promise.resolve(true);
+  if (isDemoMode()) {
+    setFullNodeFeaturesVisible(true);
+    return Promise.resolve(true);
+  }
+
+  if (isStatusView()) return Promise.resolve(true);
 
   return fetch('/api/bitcoin-node-status.php', { cache: 'no-store' })
     .then(res => res.json())
@@ -1005,6 +1023,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  if (isStatusView()) {
+    markNodeUpdating();
+  }
   pollDashboardStatus();
 
   window.addEventListener('pageshow', (event) => {

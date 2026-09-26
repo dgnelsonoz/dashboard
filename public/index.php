@@ -72,13 +72,13 @@ if ($isDemoServiceView) {
   <meta charset="utf-8" />
   <title>Bitcoin Node</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="/assets/styles.css?v=55">
+  <link rel="stylesheet" href="/assets/styles.css?v=69">
   <link rel="shortcut icon" href="/favicon.ico?v=5">
   <link rel="icon" href="/favicon.ico?v=5" type="image/x-icon" sizes="16x16">
   <link rel="icon" href="/assets/icons/favicon-16x16.png?v=5" type="image/png" sizes="16x16">
   <link rel="icon" href="/assets/icons/favicon-32x32.png?v=5" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png?v=5" sizes="180x180">
-  <script src="/assets/app.js?v=42" defer></script>
+  <script src="/assets/app.js?v=48" defer></script>
 </head>
 
 <body class="app-body<?php echo ' view-' . htmlspecialchars($view, ENT_QUOTES); ?><?php echo $isDemo ? ' demo-mode' : ''; ?>">

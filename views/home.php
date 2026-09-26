@@ -28,7 +28,7 @@
 
       <div class="kv-row" role="listitem">
         <div class="kv-k">SYNC</div>
-        <div class="kv-v"><span data-field="node-sync-percent">--</span><span data-field="node-sync-percent-sign">%</span></div>
+        <div class="kv-v"><span data-field="node-sync-percent">--</span><span data-field="node-sync-percent-sign"></span></div>
       </div>
 
       <div class="kv-row" role="listitem">

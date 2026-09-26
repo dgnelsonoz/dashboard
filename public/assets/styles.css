@@ -110,6 +110,7 @@ body.view-rtl{
 }
 
 .site-header-inner{
+  position: relative;
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: center;
@@ -128,6 +129,25 @@ body.view-rtl{
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
+}
+
+.site-logo-owner{
+  margin-right: 1.4rem;
+  font-family: "Dashboard Roboto", "Segoe UI", system-ui, -apple-system, Helvetica, Arial, sans-serif;
+  font-size: 1.25rem;
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+@media (min-width: 601px){
+  .site-logo-text{
+    position: absolute;
+    left: min(360px, 50%);
+    transform: translateX(-50%);
+    white-space: nowrap;
+  }
 }
 
 .site-logo-demo{
@@ -211,9 +231,9 @@ body.view-rtl{
 .nav-link{
   padding: 0.25rem 0.5rem;
   border-radius: 8px;
-  font-weight: 600;
+  font-weight: 500;
   text-transform: capitalize;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.02em;
   color: var(--nav);
   font-size: 0.95rem;
   border: 1px solid transparent;
@@ -583,7 +603,7 @@ body.view-rtl{
 }
 
 .status-warn.status-pulse .status-led{
-  animation: statusPulseWarn 0.9s ease-in-out infinite;
+  animation: statusPulseWarn 1.8s ease-in-out infinite;
 }
 
 .status-warn.status-pulse .status-led::after{
@@ -593,7 +613,7 @@ body.view-rtl{
   border: 2px solid rgba(227, 173, 34, 0.8);
   border-radius: 999px;
   pointer-events: none;
-  animation: statusPulseWarnHalo 0.9s ease-out infinite;
+  animation: statusPulseWarnHalo 1.8s ease-out infinite;
 }
 
 .status-bad .status-led{
@@ -879,4 +899,9 @@ body.view-rtl{
     border-radius: 8px;
     font-size: 0.82rem;
   }
+}
+
+/* Keep the last node snapshot readable when RPC temporarily stops responding. */
+.node-console-card.node-stale .kv-v {
+  color: var(--muted);
 }
