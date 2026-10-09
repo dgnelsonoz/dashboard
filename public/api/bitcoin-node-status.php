@@ -9,8 +9,6 @@ require_once dirname(__DIR__, 2) . '/lib/api-response.php';
 const SYSTEMCTL_BIN = '/usr/bin/systemctl';
 const BITCOIN_SERVICE_CANDIDATES = [
     'bitcoind.service',
-    'bitcoin.service',
-    'bitcoin-core.service',
 ];
 const BITCOIND_BIN_CANDIDATES = [
     '/usr/local/bin/bitcoind',

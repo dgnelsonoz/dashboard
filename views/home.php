@@ -54,7 +54,7 @@
   </article>
 
   <!-- Electrum Server (Electrs) console card -->
-  <article class="card status-card electrum-console-card" data-full-node-only hidden>
+  <article class="card status-card electrum-console-card" data-service-installed="electrs" hidden>
     <h2><span class="status-led" aria-hidden="true"></span>Electrum Server</h2>
 
     <div class="kv-rows" role="list">
@@ -91,7 +91,7 @@
   </article>
 
   <!-- Lightning (LND) console card -->
-  <article class="card status-card lnd-console-card" data-full-node-only hidden>
+  <article class="card status-card lnd-console-card" data-service-installed="lnd" hidden>
     <h2><span class="status-led" aria-hidden="true"></span>Lightning Node</h2>
 
     <div class="kv-rows" role="list">
@@ -110,7 +110,7 @@
   <!-- Ride The Lightning (RTL) console card -->
   <a
     class="card status-card rtl-console-card"
-    data-full-node-only
+    data-service-installed="rtl"
     hidden
     data-card-href="/?view=rtl"
     aria-label="Open Ride The Lightning"
@@ -134,7 +134,7 @@
   <!-- BTC RPC Explorer console card -->
   <a
     class="card status-card explorer-console-card"
-    data-node-installed-only
+    data-service-installed="explorer"
     hidden
     data-card-href="/?view=explorer"
     aria-label="Open BTC RPC Explorer"
@@ -158,7 +158,7 @@
   <!-- Mempool console card -->
   <a
     class="card status-card mempool-console-card"
-    data-full-node-only
+    data-service-installed="mempool"
     hidden
     data-card-href="/?view=mempool"
     aria-label="Open Mempool"

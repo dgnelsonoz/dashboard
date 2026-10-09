@@ -9,8 +9,6 @@ require_once dirname(__DIR__, 2) . '/lib/api-response.php';
 const SYSTEMCTL_BIN = '/usr/bin/systemctl';
 const ELECTRS_SERVICE_CANDIDATES = [
     'electrs.service',
-    'electrum.service',
-    'electrum-server.service',
 ];
 
 /**

@@ -12,9 +12,6 @@ require_once dirname(__DIR__, 2) . '/config/services.php';
 const SYSTEMCTL_BIN = '/usr/bin/systemctl';
 const EXPLORER_SERVICE_CANDIDATES = [
     'explorer.service',
-    'btc-rpc-explorer.service',
-    'btcrpcexplorer.service',
-    'btc-rpc-explorer',
 ];
 const EXPLORER_PACKAGE_CANDIDATES = [
     '/usr/local/lib/explorer/package.json',

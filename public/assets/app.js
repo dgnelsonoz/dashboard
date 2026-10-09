@@ -88,7 +88,6 @@ function loadPublicDemoBlockHeight() {
 let lastNodeBlocks = null;
 let lastNodeSynced = false;
 let lastNodeType = null;
-let bitcoinNodeInstalled = false;
 let lastNodeVersion = null;
 let lastNodeConnections = null;
 let lastNodeConnectionsIn = null;
@@ -182,15 +181,11 @@ function setField(field, value) {
   });
 }
 
-function setFullNodeFeaturesVisible(visible) {
-  document.querySelectorAll('[data-full-node-only]').forEach((el) => {
-    el.hidden = !visible;
-  });
-}
-
-function setNodeInstalledFeaturesVisible(installed) {
-  bitcoinNodeInstalled = installed;
-  document.querySelectorAll('[data-node-installed-only]').forEach((el) => {
+function setServiceVisibility(service, status) {
+  // Preserve the last known visibility when installation cannot be determined.
+  if (status === 'unknown') return;
+  const installed = ['running', 'starting', 'stopped'].includes(status);
+  document.querySelectorAll(`[data-service-installed="${service}"]`).forEach((el) => {
     el.hidden = !installed;
   });
 }
@@ -294,7 +289,6 @@ function markNodeUnavailable(label = 'Stopped', cardStatus = 'bad', version = ''
   lastNodeBlocks = null;
   lastNodeSynced = false;
   lastNodeType = null;
-  setFullNodeFeaturesVisible(false);
 
   setCardStatus(getNodeCard(), cardStatus);
 
@@ -380,9 +374,6 @@ function initShutdownDialog() {
 
 function updateNodeStatusCard(data) {
   const serviceStatus = data?.service?.status ?? 'unknown';
-  setNodeInstalledFeaturesVisible(
-    ['running', 'starting', 'stopped'].includes(serviceStatus) || data?.rpcAvailable === true
-  );
 
   if (serviceStatus === 'not installed') {
     markNodeUnavailable('Not Installed', 'neutral');
@@ -406,7 +397,6 @@ function updateNodeStatusCard(data) {
 
   getNodeCard()?.classList.remove('node-stale');
   lastNodeType = data.nodeType ?? null;
-  setFullNodeFeaturesVisible(lastNodeType === 'Full');
   setField('node-status', data.initialBlockDownload ? 'Synchronising' : 'Running');
   setField('node-type', data.nodeType ?? '--');
 
@@ -477,42 +467,29 @@ function fetchNodeStatus() {
     });
 }
 
-function fetchNodeFeatureVisibility() {
+function fetchServiceVisibility() {
+  if (isStatusView()) return Promise.resolve();
+  const endpoints = {
+    electrs: 'electrum-status',
+    lnd: 'lightning-node-status',
+    rtl: 'rtl-status',
+    explorer: 'explorer-status',
+    mempool: 'mempool-status',
+  };
   if (isDemoMode()) {
-    setNodeInstalledFeaturesVisible(true);
-    setFullNodeFeaturesVisible(true);
-    return Promise.resolve(true);
+    Object.keys(endpoints).forEach(service => setServiceVisibility(service, 'running'));
+    return Promise.resolve();
   }
-
-  if (isStatusView()) return Promise.resolve(true);
-
-  return fetch('/api/bitcoin-node-status.php', { cache: 'no-store' })
-    .then(res => res.json())
-    .then(json => {
-      const serviceStatus = json?.ok ? json.data?.service?.status : null;
-      setNodeInstalledFeaturesVisible(
-        ['running', 'starting', 'stopped'].includes(serviceStatus) ||
-        (json?.ok && json.data?.rpcAvailable === true)
-      );
-      const nodeType = json?.ok && json?.data?.rpcAvailable
-        ? json.data.nodeType
-        : null;
-      setFullNodeFeaturesVisible(nodeType === 'Full');
-      return nodeType === 'Full' || nodeType === 'Pruned';
-    })
-    .catch(() => {
-      setNodeInstalledFeaturesVisible(false);
-      setFullNodeFeaturesVisible(false);
-      return false;
-    });
-}
-
-function resolveNodeFeatureVisibility() {
-  fetchNodeFeatureVisibility().then(resolved => {
-    if (!resolved) {
-      setTimeout(resolveNodeFeatureVisibility, 15000);
-    }
-  });
+  return Promise.allSettled(Object.entries(endpoints).map(([service, endpoint]) =>
+    fetch(`/api/${endpoint}.php`, { cache: 'no-store' })
+      .then(res => {
+        if (!res.ok) throw new Error(`Service status HTTP ${res.status}`);
+        return res.json();
+      })
+      .then(json => {
+        if (json?.ok) setServiceVisibility(service, json.data?.service?.status ?? 'unknown');
+      })
+  ));
 }
 
 /* -----------------------------
@@ -523,6 +500,7 @@ function updateElectrsCard(data) {
   lastElectrsData = data;
 
   const serviceStatus = data?.service?.status ?? 'unknown';
+  setServiceVisibility('electrs', serviceStatus);
 
   if (serviceStatus === 'not installed') {
     electrsMetricsMisses = 0;
@@ -699,6 +677,7 @@ function applyLndCardStatus() {
 
 function updateLndCard(data) {
   const serviceStatus = data?.service?.status ?? data?.serviceStatus ?? 'unknown';
+  setServiceVisibility('lnd', serviceStatus);
   lastLndServiceStatus = serviceStatus;
 
   if (serviceStatus === 'not installed') {
@@ -789,6 +768,7 @@ function fetchLndStatus() {
 
 function updateMempoolCard(data) {
   const serviceStatus = data?.service?.status ?? 'unknown';
+  setServiceVisibility('mempool', serviceStatus);
   setConditionalCardLink(getMempoolCard(), !['not installed', 'unknown'].includes(serviceStatus));
 
   if (serviceStatus === 'not installed') {
@@ -863,6 +843,7 @@ function fetchMempoolStatus() {
 
 function updateRtlCard(data) {
   const serviceStatus = data?.service?.status ?? 'unknown';
+  setServiceVisibility('rtl', serviceStatus);
   setConditionalCardLink(getRtlCard(), !['not installed', 'unknown'].includes(serviceStatus));
 
   if (serviceStatus === 'not installed') {
@@ -937,6 +918,7 @@ function fetchRtlStatus() {
 
 function updateExplorerCard(data) {
   const serviceStatus = data?.service?.status ?? 'unknown';
+  setServiceVisibility('explorer', serviceStatus);
   setConditionalCardLink(getExplorerCard(), !['not installed', 'unknown'].includes(serviceStatus));
 
   if (serviceStatus === 'not installed') {
@@ -1011,7 +993,7 @@ function fetchExplorerStatus() {
 
 document.addEventListener('DOMContentLoaded', () => {
   initShutdownDialog();
-  resolveNodeFeatureVisibility();
+  fetchServiceVisibility();
 
   if (isStatusView() && isDemoMode()) {
     loadDemoStatus();
@@ -1024,16 +1006,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     statusPollInFlight = true;
     fetchNodeStatus().then(() => {
-      const serviceRequests = bitcoinNodeInstalled ? [fetchExplorerStatus()] : [];
-
-      if (lastNodeType === 'Full') {
-        serviceRequests.push(
-          fetchElectrsStatus(),
-          fetchLndStatus(),
-          fetchMempoolStatus(),
-          fetchRtlStatus(),
-        );
-      }
+      const serviceRequests = [
+        fetchExplorerStatus(),
+        fetchElectrsStatus(),
+        fetchLndStatus(),
+        fetchMempoolStatus(),
+        fetchRtlStatus(),
+      ];
 
       return Promise.allSettled(serviceRequests);
     }).finally(() => {
@@ -1058,5 +1037,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   setInterval(() => {
     pollDashboardStatus();
+    fetchServiceVisibility();
   }, 5000);
 });
