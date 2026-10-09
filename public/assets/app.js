@@ -281,7 +281,7 @@ function formatRtlVersion(version) {
 function markNodeUnavailable(label = 'Stopped', cardStatus = 'bad', version = '') {
   getNodeCard()?.classList.remove('node-stale');
   setField('node-status', label);
-  setField('node-type', '--');
+  setField('node-type', label === 'Not Installed' ? '' : '--');
   setField('node-block', '');
   setField('node-height-separator', '');
   setField('network-block', '');
