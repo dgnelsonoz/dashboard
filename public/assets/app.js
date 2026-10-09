@@ -103,6 +103,8 @@ let lastMempoolVersion = null;
 let lastRtlVersion = null;
 let lastExplorerVersion = null;
 let statusPollInFlight = false;
+const installedServices = new Map();
+let installationReloadPending = false;
 
 const ELECTRS_METRICS_MISS_THRESHOLD = 0;
 const LND_VERSION_MISS_THRESHOLD = 0;
@@ -181,7 +183,22 @@ function setField(field, value) {
   });
 }
 
+function trackServiceInstallation(service, status) {
+  if (!isStatusView() || isDemoMode()) return;
+  if (!['not installed', 'running', 'starting', 'stopped'].includes(status)) return;
+
+  const installed = status !== 'not installed';
+  // The first confirmed result establishes the baseline for each service.
+  if (installedServices.has(service) && installedServices.get(service) !== installed &&
+      !installationReloadPending) {
+    installationReloadPending = true;
+    window.location.reload();
+  }
+  installedServices.set(service, installed);
+}
+
 function setServiceVisibility(service, status) {
+  trackServiceInstallation(service, status);
   // Preserve the last known visibility when installation cannot be determined.
   if (status === 'unknown') return;
   const installed = ['running', 'starting', 'stopped'].includes(status);
@@ -374,6 +391,7 @@ function initShutdownDialog() {
 
 function updateNodeStatusCard(data) {
   const serviceStatus = data?.service?.status ?? 'unknown';
+  trackServiceInstallation('bitcoind', serviceStatus);
 
   if (serviceStatus === 'not installed') {
     markNodeUnavailable('Not Installed', 'neutral');
