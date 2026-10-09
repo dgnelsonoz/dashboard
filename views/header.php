@@ -11,7 +11,7 @@
       <nav class="site-nav">
         <a href="/" class="nav-link<?php echo ($view === 'home') ? ' nav-link-active' : ''; ?>">Home</a>
         <a href="/?view=rtl" class="nav-link<?php echo ($view === 'rtl') ? ' nav-link-active' : ''; ?>" data-full-node-only hidden>Lightning</a>
-        <a href="/?view=explorer" class="nav-link<?php echo ($view === 'explorer') ? ' nav-link-active' : ''; ?>">Explorer</a>
+        <a href="/?view=explorer" class="nav-link<?php echo ($view === 'explorer') ? ' nav-link-active' : ''; ?>" data-node-installed-only hidden>Explorer</a>
         <a href="/?view=mempool" class="nav-link<?php echo ($view === 'mempool') ? ' nav-link-active' : ''; ?>" data-full-node-only hidden>Mempool</a>
         <a href="/?view=guides" class="nav-link<?php echo ($view === 'guides') ? ' nav-link-active' : ''; ?>">Guides</a>
       </nav>

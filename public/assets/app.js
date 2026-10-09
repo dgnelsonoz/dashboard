@@ -88,6 +88,7 @@ function loadPublicDemoBlockHeight() {
 let lastNodeBlocks = null;
 let lastNodeSynced = false;
 let lastNodeType = null;
+let bitcoinNodeInstalled = false;
 let lastNodeVersion = null;
 let lastNodeConnections = null;
 let lastNodeConnectionsIn = null;
@@ -184,6 +185,13 @@ function setField(field, value) {
 function setFullNodeFeaturesVisible(visible) {
   document.querySelectorAll('[data-full-node-only]').forEach((el) => {
     el.hidden = !visible;
+  });
+}
+
+function setNodeInstalledFeaturesVisible(installed) {
+  bitcoinNodeInstalled = installed;
+  document.querySelectorAll('[data-node-installed-only]').forEach((el) => {
+    el.hidden = !installed;
   });
 }
 
@@ -372,6 +380,9 @@ function initShutdownDialog() {
 
 function updateNodeStatusCard(data) {
   const serviceStatus = data?.service?.status ?? 'unknown';
+  setNodeInstalledFeaturesVisible(
+    ['running', 'starting', 'stopped'].includes(serviceStatus) || data?.rpcAvailable === true
+  );
 
   if (serviceStatus === 'not installed') {
     markNodeUnavailable('Not Installed', 'neutral');
@@ -468,6 +479,7 @@ function fetchNodeStatus() {
 
 function fetchNodeFeatureVisibility() {
   if (isDemoMode()) {
+    setNodeInstalledFeaturesVisible(true);
     setFullNodeFeaturesVisible(true);
     return Promise.resolve(true);
   }
@@ -477,6 +489,11 @@ function fetchNodeFeatureVisibility() {
   return fetch('/api/bitcoin-node-status.php', { cache: 'no-store' })
     .then(res => res.json())
     .then(json => {
+      const serviceStatus = json?.ok ? json.data?.service?.status : null;
+      setNodeInstalledFeaturesVisible(
+        ['running', 'starting', 'stopped'].includes(serviceStatus) ||
+        (json?.ok && json.data?.rpcAvailable === true)
+      );
       const nodeType = json?.ok && json?.data?.rpcAvailable
         ? json.data.nodeType
         : null;
@@ -484,6 +501,7 @@ function fetchNodeFeatureVisibility() {
       return nodeType === 'Full' || nodeType === 'Pruned';
     })
     .catch(() => {
+      setNodeInstalledFeaturesVisible(false);
       setFullNodeFeaturesVisible(false);
       return false;
     });
@@ -1006,7 +1024,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     statusPollInFlight = true;
     fetchNodeStatus().then(() => {
-      const serviceRequests = [fetchExplorerStatus()];
+      const serviceRequests = bitcoinNodeInstalled ? [fetchExplorerStatus()] : [];
 
       if (lastNodeType === 'Full') {
         serviceRequests.push(

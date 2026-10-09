@@ -134,6 +134,8 @@
   <!-- BTC RPC Explorer console card -->
   <a
     class="card status-card explorer-console-card"
+    data-node-installed-only
+    hidden
     data-card-href="/?view=explorer"
     aria-label="Open BTC RPC Explorer"
     aria-disabled="true"
