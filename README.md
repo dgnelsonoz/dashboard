@@ -1,6 +1,6 @@
 # Dashboard
 
-Dashboard is a lightweight web interface for monitoring a self-hosted Bitcoin and Lightning node.  It is used as part of a Debian based bitcoin node built with the instructions from the **[Bitcoin node workshop](https://workshop.nelson.au)**.
+Dashboard is a lightweight web interface for monitoring a self-hosted Bitcoin and Lightning node.  It is used as part of a Debian based bitcoin node built with the instructions from the **[Bitcoin node workshop](https://workshop.entropy39.com)**.
 
 The Dashboard provides an interface for viewing the status of Bitcoin Core and related services, including a Lightning node (LND), an Electrum server (Electrs), Mempool, Ride The Lightning (RTL), and BTC RPC Explorer.
 
@@ -18,11 +18,11 @@ The Dashboard provides an interface for viewing the status of Bitcoin Core and r
 
 ## Documentation
 
-Complete installation and configuration instructions are available from the **[Bitcoin node workshop](https://workshop.nelson.au)**.
+Complete installation and configuration instructions are available from the **[Bitcoin node workshop](https://workshop.entropy39.com)**.
 
 The workshop provides a step-by-step guide to building a Debian-based Bitcoin node, including installation and configuration of all supported services.
 
-A preview of the dashboard can be found here: **[Dashboard preview](https://dashboard.nelson.au)**.
+A preview of the dashboard can be found here: **[Dashboard preview](https://dashboard.entropy39.com)**.
 
 ## License
 
