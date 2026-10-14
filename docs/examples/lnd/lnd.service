@@ -1,0 +1,15 @@
+[Unit]
+Description=LND Lightning Network Daemon
+After=network-online.target bitcoind.service
+Wants=network-online.target
+
+[Service]
+User=lnd
+Group=lnd
+Type=notify
+ExecStart=/usr/local/bin/lnd --configfile=/etc/lnd.conf
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

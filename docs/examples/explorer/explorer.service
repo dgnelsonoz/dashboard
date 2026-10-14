@@ -1,0 +1,16 @@
+[Unit]
+Description=BTC RPC Explorer
+After=network-online.target bitcoind.service electrs.service
+Wants=network-online.target bitcoind.service electrs.service
+
+[Service]
+User=explorer
+Group=explorer
+WorkingDirectory=/usr/local/lib/btc-rpc-explorer
+EnvironmentFile=/etc/btc-rpc-explorer.env
+ExecStart=/usr/bin/npm start
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,16 @@
+[Unit]
+Description=Mempool Backend
+After=network-online.target bitcoind.service electrs.service mariadb.service
+Wants=network-online.target
+
+[Service]
+User=mempool
+Group=mempool
+Type=simple
+WorkingDirectory=/usr/local/lib/mempool/backend
+ExecStart=/usr/bin/npm run start
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

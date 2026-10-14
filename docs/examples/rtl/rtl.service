@@ -1,0 +1,17 @@
+[Unit]
+Description=Ride The Lightning (RTL)
+After=network-online.target lnd.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=rtl
+Group=rtl
+WorkingDirectory=/usr/local/lib/rtl
+Environment=HOST=127.0.0.1
+ExecStart=/usr/bin/node rtl
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
