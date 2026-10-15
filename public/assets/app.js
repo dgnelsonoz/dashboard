@@ -88,6 +88,7 @@ function loadPublicDemoBlockHeight() {
 let lastNodeBlocks = null;
 let lastNodeSynced = false;
 let lastNodeType = null;
+let bitcoinNodeInstalled = false;
 let lastNodeVersion = null;
 let lastNodeConnections = null;
 let lastNodeConnectionsIn = null;
@@ -109,11 +110,16 @@ let installationReloadPending = false;
 const ELECTRS_METRICS_MISS_THRESHOLD = 0;
 const LND_VERSION_MISS_THRESHOLD = 0;
 const NODE_VERSION_STORAGE_KEY = 'dashboard.bitcoinNodeVersion';
+const NODE_TYPE_STORAGE_KEY = 'dashboard.bitcoinNodeType';
 
 try {
   lastNodeVersion = window.localStorage.getItem(NODE_VERSION_STORAGE_KEY);
+  const storedNodeType = window.localStorage.getItem(NODE_TYPE_STORAGE_KEY);
+  if (storedNodeType === 'Full' || storedNodeType === 'Pruned') {
+    lastNodeType = storedNodeType;
+  }
 } catch (err) {
-  console.warn('Unable to read cached node version:', err);
+  console.warn('Unable to read cached node details:', err);
 }
 
 /* -----------------------------
@@ -184,12 +190,12 @@ function setField(field, value) {
 }
 
 function trackServiceInstallation(service, status) {
-  if (!isStatusView() || isDemoMode()) return;
   if (!['not installed', 'running', 'starting', 'stopped'].includes(status)) return;
 
   const installed = status !== 'not installed';
   // The first confirmed result establishes the baseline for each service.
-  if (installedServices.has(service) && installedServices.get(service) !== installed &&
+  if (isStatusView() && !isDemoMode() &&
+      installedServices.has(service) && installedServices.get(service) !== installed &&
       !installationReloadPending) {
     installationReloadPending = true;
     window.location.reload();
@@ -197,14 +203,51 @@ function trackServiceInstallation(service, status) {
   installedServices.set(service, installed);
 }
 
+function serviceIsSupportedByNode(service) {
+  if (!bitcoinNodeInstalled) return false;
+  if (lastNodeType === 'Full') return true;
+  return lastNodeType === 'Pruned' && service === 'explorer';
+}
+
+function refreshServiceVisibility() {
+  document.querySelectorAll('[data-service-panel]').forEach((el) => {
+    el.hidden = !serviceIsSupportedByNode(el.dataset.servicePanel);
+  });
+
+  document.querySelectorAll('[data-service-navigation]').forEach((el) => {
+    const service = el.dataset.serviceNavigation;
+    el.hidden = !serviceIsSupportedByNode(service) || installedServices.get(service) !== true;
+  });
+}
+
 function setServiceVisibility(service, status) {
   trackServiceInstallation(service, status);
-  // Preserve the last known visibility when installation cannot be determined.
-  if (status === 'unknown') return;
-  const installed = ['running', 'starting', 'stopped'].includes(status);
-  document.querySelectorAll(`[data-service-installed="${service}"]`).forEach((el) => {
-    el.hidden = !installed;
-  });
+  refreshServiceVisibility();
+}
+
+function setBitcoinNodeAvailability(status, nodeType = null) {
+  if (['running', 'starting', 'stopped'].includes(status)) {
+    bitcoinNodeInstalled = true;
+  } else if (status === 'not installed') {
+    bitcoinNodeInstalled = false;
+    lastNodeType = null;
+    try {
+      window.localStorage.removeItem(NODE_TYPE_STORAGE_KEY);
+    } catch (err) {
+      console.warn('Unable to clear cached node type:', err);
+    }
+  }
+
+  if (nodeType === 'Full' || nodeType === 'Pruned') {
+    lastNodeType = nodeType;
+    try {
+      window.localStorage.setItem(NODE_TYPE_STORAGE_KEY, nodeType);
+    } catch (err) {
+      console.warn('Unable to cache node type:', err);
+    }
+  }
+
+  refreshServiceVisibility();
 }
 
 function markNodeUpdating() {
@@ -305,7 +348,6 @@ function markNodeUnavailable(label = 'Stopped', cardStatus = 'bad', version = ''
   setField('node-version', version ? parseCoreKnotsLabel(version) : '');
   lastNodeBlocks = null;
   lastNodeSynced = false;
-  lastNodeType = null;
 
   setCardStatus(getNodeCard(), cardStatus);
 
@@ -392,6 +434,7 @@ function initShutdownDialog() {
 function updateNodeStatusCard(data) {
   const serviceStatus = data?.service?.status ?? 'unknown';
   trackServiceInstallation('bitcoind', serviceStatus);
+  setBitcoinNodeAvailability(serviceStatus, data?.nodeType);
 
   if (serviceStatus === 'not installed') {
     markNodeUnavailable('Not Installed', 'neutral');
@@ -414,7 +457,6 @@ function updateNodeStatusCard(data) {
   }
 
   getNodeCard()?.classList.remove('node-stale');
-  lastNodeType = data.nodeType ?? null;
   setField('node-status', data.initialBlockDownload ? 'Synchronising' : 'Running');
   setField('node-type', data.nodeType ?? '--');
 
@@ -495,10 +537,26 @@ function fetchServiceVisibility() {
     mempool: 'mempool-status',
   };
   if (isDemoMode()) {
+    setBitcoinNodeAvailability('running', 'Full');
     Object.keys(endpoints).forEach(service => setServiceVisibility(service, 'running'));
     return Promise.resolve();
   }
-  return Promise.allSettled(Object.entries(endpoints).map(([service, endpoint]) =>
+
+  const nodeRequest = fetch('/api/bitcoin-node-status.php', { cache: 'no-store' })
+    .then(res => {
+      if (!res.ok) throw new Error(`Node status HTTP ${res.status}`);
+      return res.json();
+    })
+    .then(json => {
+      if (json?.ok) {
+        setBitcoinNodeAvailability(
+          json.data?.service?.status ?? 'unknown',
+          json.data?.nodeType ?? null,
+        );
+      }
+    });
+
+  const serviceRequests = Object.entries(endpoints).map(([service, endpoint]) =>
     fetch(`/api/${endpoint}.php`, { cache: 'no-store' })
       .then(res => {
         if (!res.ok) throw new Error(`Service status HTTP ${res.status}`);
@@ -507,7 +565,9 @@ function fetchServiceVisibility() {
       .then(json => {
         if (json?.ok) setServiceVisibility(service, json.data?.service?.status ?? 'unknown');
       })
-  ));
+  );
+
+  return Promise.allSettled([nodeRequest, ...serviceRequests]);
 }
 
 /* -----------------------------
