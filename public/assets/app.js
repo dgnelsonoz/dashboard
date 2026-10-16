@@ -458,7 +458,7 @@ function updateNodeStatusCard(data) {
 
   getNodeCard()?.classList.remove('node-stale');
   setField('node-status', data.initialBlockDownload ? 'Synchronising' : 'Running');
-  setField('node-type', data.nodeType ?? '--');
+  setField('node-type', data.nodeType === 'Full' ? 'Archival' : (data.nodeType ?? '--'));
 
   lastNodeBlocks = (typeof data.blocks === 'number') ? data.blocks : null;
   lastNodeSynced = data.initialBlockDownload === false && lastNodeBlocks !== null;
