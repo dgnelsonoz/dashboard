@@ -200,9 +200,7 @@ prepare_release() {
 }
 
 validate_web_password() {
-    [[ ${#WEB_PASSWORD} -ge 12 ]] || die "The Explorer web password must contain at least 12 characters."
-    [[ $WEB_PASSWORD =~ ^[A-Za-z0-9._~!@%+=:,?-]+$ ]] || \
-        die "The Explorer web password contains unsupported characters. Use letters, numbers, or ._~!@%+=:,?-"
+    [[ -n $WEB_PASSWORD ]] || die "The Explorer web password cannot be empty."
 }
 
 read_web_password() {
