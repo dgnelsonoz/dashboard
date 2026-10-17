@@ -213,9 +213,9 @@ read_web_password() {
         IFS= read -r WEB_PASSWORD <"$PASSWORD_FILE" || [[ -n $WEB_PASSWORD ]]
     else
         [[ -t 0 && -t 1 ]] || die "Interactive installation requires a terminal or --password-file."
-        read -r -s -p "Explorer web password: " WEB_PASSWORD
+        read -r -s -p "Set a password for the Explorer: " WEB_PASSWORD
         printf '\n'
-        read -r -s -p "Confirm Explorer web password: " confirmation
+        read -r -s -p "Confirm the password for the Explorer: " confirmation
         printf '\n'
         [[ $WEB_PASSWORD == "$confirmation" ]] || die "The Explorer web passwords do not match."
     fi
@@ -342,7 +342,8 @@ install_or_verify() {
 }
 
 atomic_install() {
-    local source=$1 target=$2 owner=$3 group=$4 mode=$5 temporary=${target}.entropy39-new
+    local source=$1 target=$2 owner=$3 group=$4 mode=$5
+    local temporary=${target}.entropy39-new
     if [[ -e $temporary ]]; then
         [[ -f $temporary && ! -L $temporary && $(sha256 "$source") == $(sha256 "$temporary") ]] || \
             die "Unexpected interrupted-install file at $temporary; it was not overwritten."
