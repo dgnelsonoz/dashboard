@@ -14,6 +14,7 @@ const EXPLORER_SERVICE_CANDIDATES = [
     'explorer.service',
 ];
 const EXPLORER_PACKAGE_CANDIDATES = [
+    '/usr/local/lib/btc-rpc-explorer/package.json',
     '/usr/local/lib/explorer/package.json',
     '/opt/btc-rpc-explorer/package.json',
     '/srv/btc-rpc-explorer/package.json',
