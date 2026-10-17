@@ -1,7 +1,7 @@
 [Unit]
 Description=BTC RPC Explorer
-After=network-online.target bitcoind.service electrs.service
-Wants=network-online.target bitcoind.service electrs.service
+After=network-online.target bitcoind.service
+Wants=network-online.target bitcoind.service
 
 [Service]
 User=explorer
